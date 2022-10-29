@@ -131,12 +131,12 @@ async function createPR(
     var repos = fs.readFileSync('repos.txt').toString().split('\n');
     console.log(`[New Directory] created directory for clones`);
     shell.mkdir('clones');
+    console.log(`[Current Directory] changed to clones`);
+    shell.cd('clones');
     for (let i in repos) {
         let url = repos[i];
         let repoDetails: Array<string> = extractGitHubRepoPath(url);
         await forkRepo(url, repoDetails);
-        console.log(`[Current Directory] changed to clones`);
-        shell.cd('clones');
         let sshUrl =
             'git@github.com:' + USERNAME + '/' + repoDetails[1] + '.git';
         await cloneRepo(sshUrl, repoDetails);
