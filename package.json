@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc && node dist/app.js"
   },
   "author": "Prince Mendiratta",
   "license": "ISC",
@@ -12,6 +12,10 @@
     "@octokit/rest": "^19.0.5",
     "@types/node": "^18.11.7",
     "dotenv": "^16.0.3",
+    "shelljs": "^0.8.5",
     "typescript": "^4.8.4"
+  },
+  "devDependencies": {
+    "@types/shelljs": "^0.8.11"
   }
 }
