@@ -1,13 +1,16 @@
 import * as dotenv from 'dotenv';
-import { Octokit } from '@octokit/rest'
+import { Octokit } from '@octokit/core'
+import { createPullRequest } from 'octokit-plugin-create-pull-request';
 import shell from 'shelljs'
 
 dotenv.config();
 const USERNAME = 'Prince-Mendiratta';
-let COMMIT_MESSAGE_BASE = 'fix: remove '
+const COMMIT_MESSAGE_BASE = 'fix: remove '
 let PR_DESCRIPTION = ''
 
-var client = new Octokit({
+const MyOctokit = Octokit.plugin(createPullRequest);
+
+var client = new MyOctokit({
     auth: process.env.AUTH_TOKEN
 });
 
@@ -21,13 +24,12 @@ function extractGitHubRepoPath(url: string): Array<string> {
 
 async function forkRepo(url: string, repoDetails: Array<string>){
     console.log(`[Forking] Creating fork for ${repoDetails[1]}`);
-    let res = await client.rest.repos.createFork({
+    let res = await client.request(`POST /repos/{owner}/{repo}/forks`, {
         owner: repoDetails[0],
         repo: repoDetails[1],
         default_branch_only: true
     })
     return res;
-    // client.fork()
 }
 
 function cloneRepo(url: string){
@@ -36,11 +38,11 @@ function cloneRepo(url: string){
     return cloner;
 }
 
-function commitAndPush(repo: string) {
-    console.log(`[Commit] Commiting for repo - ${repo}!`);
+function commitAndPush(repo: string, message: string) {
+    console.log(`[Commit] Commiting and pushing for repo - ${repo}!`);
     let { stdout, stderr, code } = shell.exec('git branch', {silent: true})
     let default_branch: string = stdout.replace('*', '').trim();
-    shell.exec(`git add . && git commit -S -s -m "${COMMIT_MESSAGE_BASE}" && git push origin ${default_branch}`, {silent: true})
+    shell.exec(`git add . && git commit -S -s -m "${message}" && git push origin ${default_branch}`, {silent: true})
 }
 
 function removeReplitAndCommit(repoDetails: Array<string>){
@@ -60,24 +62,25 @@ function removeReplitAndCommit(repoDetails: Array<string>){
     Number(stdout[0]) && removeFile('.replit') && files++;
     Number(stdout[1]) && removeFile('replit.nix') && files++
 
+    let commitMessage: string;
     if(files > 1){
-        COMMIT_MESSAGE_BASE += `${removals[0]} and ${removals[1]} files`;
+        commitMessage = COMMIT_MESSAGE_BASE + `${removals[0]} and ${removals[1]} files`;
     }else{
-        COMMIT_MESSAGE_BASE += `${removals[0]} file`;
+        commitMessage = COMMIT_MESSAGE_BASE + `${removals[0]} file`;
     }
 
-    commitAndPush(repoDetails[1]);
+    commitAndPush(repoDetails[1], commitMessage);
 }
 
 (async () => {
     let url = 'https://github.com/freeCodeCamp/boilerplate-npm'
     let repoDetails: Array<string> = extractGitHubRepoPath(url)
-    // let res = await forkRepo(url, repoDetails);
-    // console.log(`[New Directory] created dir for clones`)
-    // shell.mkdir('clones');
+    let res = await forkRepo(url, repoDetails);
+    console.log(`[New Directory] created dir for clones`)
+    shell.mkdir('clones');
     console.log(`[Current Directory] changed to clones`)
     shell.cd('clones');
-    let sshUrl = 'git@github.com:' + USERNAME + repoDetails[1] + '.git'
+    let sshUrl = 'git@github.com:' + USERNAME + '/' + repoDetails[1] + '.git'
     let cloner = cloneRepo(sshUrl);
     cloner.on('close', (code) => {
         if(code){
