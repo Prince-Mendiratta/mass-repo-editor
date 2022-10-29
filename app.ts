@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
 import { Octokit } from '@octokit/core';
 import shell, { exec } from 'shelljs';
-import { ChildProcess } from 'child_process';
 import fs from 'fs';
 
 dotenv.config();
