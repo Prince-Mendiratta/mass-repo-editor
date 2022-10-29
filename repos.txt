@@ -1,4 +1,3 @@
-https://github.com/freeCodeCamp/boilerplate-npm
 https://github.com/freeCodeCamp/boilerplate-express
 https://github.com/freeCodeCamp/boilerplate-mongomongoose
 https://github.com/freeCodeCamp/boilerplate-project-timestamp
